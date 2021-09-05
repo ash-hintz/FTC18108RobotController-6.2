@@ -103,31 +103,44 @@ public class MoveInAllDirections extends LinearOpMode {
         boolean toggleDriving; // True = Car Mode, False = Tank Mode
         double leftWheelPower;
         double rightWheelPower;
-
+        boolean motorBState = false;
+        boolean buttonYState = false;
+        double xAxis;
+        double yAxis;
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
 
+
+
             // POV Mode uses left stick to go forward, and right stick to turn.
             // - This uses basic math to combine motions and is easier to drive straight.
-            double xAxis =  gamepad1.right_stick_x;
-            double yAxis =  gamepad1.right_stick_y;
+            xAxis =  gamepad1.right_stick_x;
+            yAxis =  gamepad1.right_stick_y;
             leftWheelPower = 0.3 * Range.clip(xAxis, -1.0, 1.0) ;
             rightWheelPower = 0.3 * Range.clip(yAxis, -1.0, 1.0) ;
 
-            // Send calculated power to wheels (when button 'x' is pressed)
-            if (gamepad1.x);
-                motor0.setPower(leftWheelPower);
-                motor1.setPower(rightWheelPower*0.66);
-                motor2.setPower(rightWheelPower*0.66);
-                motor3.setPower(leftWheelPower);
+            // Send calculated power to wheels
+            motor0.setPower(-leftWheelPower);
+            motor1.setPower(rightWheelPower);
+            motor2.setPower(rightWheelPower);
+            motor3.setPower(-leftWheelPower);
 
+            // Start Ring Intake Motor
 
-
-
-
-
-
-
+            if ((!buttonYState) && (gamepad1.y)) {
+                if (!motorBState) {
+                    motorBState = true;
+                    buttonYState = true;
+                    motorB.setPower(1.0);
+                } else {
+                    motorBState = false;
+                    buttonYState = true;
+                    motorB.setPower(0.0);
+                }
+            }
+            if ((!gamepad1.y) && (buttonYState)) {
+                buttonYState = false;
+            }
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
