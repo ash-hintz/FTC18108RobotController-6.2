@@ -118,12 +118,32 @@ public class MoveInAllDirections extends LinearOpMode {
             yAxis =  gamepad1.right_stick_y;
             leftWheelPower = 0.3 * Range.clip(xAxis, -1.0, 1.0) ;
             rightWheelPower = 0.3 * Range.clip(yAxis, -1.0, 1.0) ;
-
             // Send calculated power to wheels
-            motor0.setPower(-leftWheelPower);
-            motor1.setPower(rightWheelPower);
-            motor2.setPower(rightWheelPower);
-            motor3.setPower(-leftWheelPower);
+            if (rightWheelPower == 0 || leftWheelPower == 0) {
+                if (rightWheelPower == 0) {
+                    rightWheelPower = leftWheelPower;
+                    motor0.setPower(-leftWheelPower);
+                    motor1.setPower(rightWheelPower);
+                    motor2.setPower(rightWheelPower);
+                    motor3.setPower(-leftWheelPower);
+                }
+                if (leftWheelPower == 0) {
+                    leftWheelPower = -rightWheelPower;
+                    motor0.setPower(-leftWheelPower);
+                    motor1.setPower(rightWheelPower);
+                    motor2.setPower(rightWheelPower);
+                    motor3.setPower(-leftWheelPower);
+                }
+
+            } else {
+                motor0.setPower(-leftWheelPower);
+                motor1.setPower(rightWheelPower);
+                motor2.setPower(rightWheelPower);
+                motor3.setPower(-leftWheelPower);
+            }
+
+
+
 
             // Start Ring Intake Motor
 
