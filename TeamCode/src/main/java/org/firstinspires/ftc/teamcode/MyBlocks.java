@@ -71,6 +71,8 @@ public class MyBlocks extends LinearOpMode {
     private DcMotor motorB = null;
     private Servo servo;
     private BNO055IMU imu;
+    Orientation lastAngles = new Orientation();
+    double globalAngle;
 
     @Override
     public void runOpMode() {
@@ -159,6 +161,7 @@ public class MyBlocks extends LinearOpMode {
         double leftWheelPower;
         double rightWheelPower;
         boolean motorBState = false;
+        boolean buttonXState = false;
         boolean buttonYState = false;
         double xAxis;
         double yAxis;
@@ -193,102 +196,98 @@ public class MyBlocks extends LinearOpMode {
         }
     }
 
+    public void MoveTank(double lPower, double rPower) {
+        double leftPower = lPower;
+        double rightPower = rPower;
+
+        motor0.setPower(leftPower * 0.4);
+        motor1.setPower(rightPower * -0.4);
+        motor2.setPower(leftPower * 0.4);
+        motor3.setPower(rightPower * -0.4);
+    }
+
+    public double getAngle() {
+
+        Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        telemetry.addData("Gyro Angle", "(%.2f)", angles.firstAngle);
+        telemetry.update();
+
+        double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
+
+        if (deltaAngle < -180)
+            deltaAngle += 360;
+        else if (deltaAngle > 180)
+            deltaAngle -= 360;
+
+        globalAngle += deltaAngle;
+        lastAngles = angles;
+
+        return (int) globalAngle;
+    }
+
     // TurnTankGyro
 
-    public int TurnTankGyro(int Angle, int Speed) {
+    public void TurnTankGyro(int Angle, int Speed) {
         // By: Anirudh Jagannathan
 
         // IN THIS MYBLOCK, SPEED MUST ALWAYS BE POSITIVE!!!
         // Degrees can be negative or positive
 
-        // Declare OpMode members.
-        private ElapsedTime runtime = new ElapsedTime();
-        private DcMotor motor0, motor1, motor2, motor3;
-        private BNO055IMU imu;
-        Orientation lastAngles = new Orientation();
-        double globalAngle;
-
         double power = -0.4;
         double motorDistance = 5000;
         double correction = 0;
 
-        private double getAngle() {
-
-            Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            telemetry.addData("Gyro Angle", "(%.2f)", angles.firstAngle);
-            telemetry.update();
-
-            double deltaAngle = angles.firstAngle - lastAngles.firstAngle;
-
-            if (deltaAngle < -180)
-                deltaAngle += 360;
-            else if (deltaAngle > 180)
-                deltaAngle -= 360;
-
-            globalAngle += deltaAngle;
-            lastAngles = angles;
-
-            return (int) globalAngle;
-        }
-
         double my_speed = Speed;
         double my_angle = Angle;
-        double start_angle = getAngle;
+        double start_angle = getAngle();
         double stop_angle = (start_angle + my_angle);
         double decel_angle = my_speed * 2.4;
-        motor0.setPower(0);
-        motor1.setPower(0);
-        motor2.setPower(0);
-        motor3.setPower(0);
+        motor0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         if (my_angle >= 0) {
             // Turning right
             while (true) {
-                double current_gyro_angle = getAngle;
+                double current_gyro_angle = getAngle();
                 if ((current_gyro_angle) >= stop_angle) {
-                    motor0.setPower(0);
-                    motor1.setPower(0);
-                    motor2.setPower(0);
-                    motor3.setPower(0);
+                    MoveTank(0,0);
                     break;
                 }
                 if (current_gyro_angle >= (stop_angle - decel_angle)) {
-                    double calc = (((start_angle + my_angle) - (current_gyro_angle)) / decel_angle)
+                    double calc = (((start_angle + my_angle) - (current_gyro_angle)) / decel_angle);
                     double new_speed = my_speed * calc;
                     if (new_speed > 1) {
-                        move_tank.on(new_speed, (-1 * new_speed));
+                        MoveTank(new_speed, (-1 * new_speed));
                     } else {
-                        move_tank.on(1, -1);
+                        MoveTank(1, -1);
                     }
-                    else {
-                        move_tank.on(my_speed, -1 * my_speed);
-                    }
+                }
+                else {
+                    MoveTank(my_speed, -1 * my_speed);
                 }
             }
         }
         else {
             // Turning left
             while (true) {
-                double current_gyro_angle = getAngle;
+                double current_gyro_angle = getAngle();
                 if ((current_gyro_angle) <= stop_angle) {
-                    motor0.setPower(0);
-                    motor1.setPower(0);
-                    motor2.setPower(0);
-                    motor3.setPower(0);
+                    MoveTank(0,0);
                     break;
                 }
                 if (current_gyro_angle <= (stop_angle + decel_angle)) {
-                    double calc = -1 * (((start_angle + my_angle) - (current_gyro_angle)) / decel_angle)
+                    double calc = -1 * (((start_angle + my_angle) - (current_gyro_angle)) / decel_angle);
                     double new_speed = my_speed * calc;
                     if (new_speed > 1) {
-                        move_tank.on((-1 * new_speed), new_speed);
+                        MoveTank((-1 * new_speed), new_speed);
+                    } else {
+                        MoveTank(-1, 1);
                     }
-                    else {
-                        move_tank.on(-1, 1);
-                    }
-                        else {
-                        move_tank.on(-1 * my_speed, my_speed);
-                    }
+                }
+                else {
+                    MoveTank(-1 * my_speed, my_speed);
                 }
             }
         }
