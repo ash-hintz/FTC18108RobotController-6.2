@@ -206,7 +206,7 @@ public class MyBlocks extends LinearOpMode {
         motor3.setPower(rightPower * -0.4);
     }
 
-    public double getAngle() {
+    public double getAngle () {
 
         Orientation angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         telemetry.addData("Gyro Angle", "(%.2f)", angles.firstAngle);
@@ -226,7 +226,6 @@ public class MyBlocks extends LinearOpMode {
     }
 
     // TurnTankGyro
-
     public void TurnTankGyro(int Angle, int Speed) {
         // By: Anirudh Jagannathan
 
@@ -252,7 +251,7 @@ public class MyBlocks extends LinearOpMode {
             while (true) {
                 double current_gyro_angle = getAngle();
                 if ((current_gyro_angle) >= stop_angle) {
-                    MoveTank(0,0);
+                    MoveTank(0, 0);
                     break;
                 }
                 if (current_gyro_angle >= (stop_angle - decel_angle)) {
@@ -274,7 +273,7 @@ public class MyBlocks extends LinearOpMode {
             while (true) {
                 double current_gyro_angle = getAngle();
                 if ((current_gyro_angle) <= stop_angle) {
-                    MoveTank(0,0);
+                    MoveTank(0, 0);
                     break;
                 }
                 if (current_gyro_angle <= (stop_angle + decel_angle)) {
@@ -282,7 +281,8 @@ public class MyBlocks extends LinearOpMode {
                     double new_speed = my_speed * calc;
                     if (new_speed > 1) {
                         MoveTank((-1 * new_speed), new_speed);
-                    } else {
+                    }
+                    else {
                         MoveTank(-1, 1);
                     }
                 }
